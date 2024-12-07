@@ -1,0 +1,29 @@
+# Configuración para el plugin PrivateWarps
+
+# Configuración general de warps
+settings:
+  # Límite de warps por jugador
+  maxWarps: 5  # Límite de warps que un jugador puede crear
+
+# Configuración de mensajes del plugin PrivateWarps
+messages:
+  # Mensajes generales
+  warpCreated: '¡Warp creado correctamente!'  # Mensaje cuando se crea un warp con éxito
+  warpDeleted: '¡Warp eliminado correctamente!'  # Mensaje cuando se elimina un warp
+  warpNotFound: '¡Warp no encontrado!'  # Mensaje cuando no se encuentra un warp
+  warpsList: 'Lista de tus warps privados:'  # Mensaje que muestra una lista de warps
+  teleportSuccess: '¡Teletransportado con éxito a %warpName%!'  # Mensaje cuando el teletransporte es exitoso
+  teleportFailed: '¡No se pudo teletransportar!'  # Mensaje cuando el teletransporte falla
+
+  # Mensajes específicos para comandos
+  setpwarpUsage: 'Uso: /setpwarp <nombre>'  # Mensaje de uso del comando /setpwarp
+  delpwarpUsage: 'Uso: /delpwarp <nombre>'  # Mensaje de uso del comando /delpwarp
+  pwarpUsage: 'Uso: /pwarp [nombre]'  # Mensaje de uso del comando /pwarp
+  pwarpreloadUsage: 'Uso: /pwarpreload'  # Mensaje de uso del comando /pwarpreload
+
+  # Mensajes para acciones específicas
+  warpSaved: "¡Warp guardado correctamente!"  # Mensaje cuando un warp se guarda correctamente
+  maxWarpsExceeded: "¡Has alcanzado el límite máximo de warps!"  # Mensaje cuando el jugador supera el límite de warps
+  warpNotFound: "¡No se ha encontrado el warp con ese nombre!"  # Mensaje cuando no se encuentra el warp especificado
+  noWarps: '¡No tienes warps guardados!'  # Mensaje cuando el jugador no tiene warps guardados
+  configReloaded: "¡La configuración ha sido recargada exitosamente!"  # Mensaje cuando se recarga la configuración
