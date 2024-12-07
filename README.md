@@ -1,3 +1,4 @@
+Spigot: https://www.spigotmc.org/resources/private-warps.121177/
 Private Warps is a plugin for Minecraft that allows players to create, manage, and delete private warps on their server. With this plugin, players can have personal warps that only they can access, allowing them to teleport to specific places without other players having access. Additionally, administrators can configure a limit on the number of warps a player can create directly from the config.yml file.
 
 The plugin is fully compatible with LuckPerms, meaning you can efficiently manage command permissions using this permission system. This allows administrators to customize which players or groups have access to the commands of Private Warps.
