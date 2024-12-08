@@ -15,38 +15,42 @@ public class WarpManager {
     private Map<UUID, Map<String, Location>> playerWarps;
     private PrivateWarps plugin;
     private File warpsFile;
+    private boolean warpsChanged;  // Bandera para indicar si hubo cambios en los warps
 
     // Constructor modificado para aceptar PrivateWarps y configurar el archivo pwarps.yml
     public WarpManager(PrivateWarps plugin) {
         this.plugin = plugin;
         this.playerWarps = new HashMap<>();
         this.warpsFile = new File(plugin.getDataFolder(), "pwarps.yml");
+        this.warpsChanged = false;  // Inicialmente no hay cambios
 
         // Cargar los warps al iniciar el plugin
         loadWarps();
 
-        // Programar la tarea para guardar los warps cada 5 minutos
-        Bukkit.getScheduler().runTaskTimer(plugin, this::saveWarps, 0L, 1000L * 60 * 5);
+        // Programar la tarea para guardar los warps cada 5 minutos, solo si hubo cambios
+        Bukkit.getScheduler().runTaskTimer(plugin, this::saveWarpsIfNeeded, 0L, 1000L * 60 * 5);
+    }
 
-        // Guardar los warps cuando un jugador se desconecta
-        Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
-            @org.bukkit.event.EventHandler
-            public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
-                saveWarps();
-            }
-        }, plugin);
+    // Método que guarda los warps solo si hubo cambios
+    public void saveWarpsIfNeeded() {
+        if (warpsChanged) {
+            saveWarps();
+            warpsChanged = false;  // Restablecemos la bandera después de guardar
+        }
     }
 
     public void addWarp(UUID playerId, String warpName, Location location) {
         playerWarps
                 .computeIfAbsent(playerId, k -> new HashMap<>())
                 .put(warpName, location);
+        warpsChanged = true;  // Marcar como cambiado
     }
 
     public void removeWarp(UUID playerId, String warpName) {
         Map<String, Location> warps = playerWarps.get(playerId);
         if (warps != null) {
             warps.remove(warpName);
+            warpsChanged = true;  // Marcar como cambiado
         }
     }
 
