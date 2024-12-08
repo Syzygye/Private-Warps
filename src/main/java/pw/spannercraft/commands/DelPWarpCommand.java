@@ -7,7 +7,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import pw.spannercraft.PrivateWarps;
-import pw.spannercraft.managers.WarpManager;
+import pw.spannercraft.WarpManager;  // Cambié esta línea para importar desde el paquete correcto
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.LuckPermsProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +19,17 @@ public class DelPWarpCommand implements CommandExecutor, TabCompleter {
 
     private WarpManager warpManager;
     private PrivateWarps plugin;
+    private LuckPerms luckPermsAPI;
 
     public DelPWarpCommand(WarpManager warpManager, PrivateWarps plugin) {
         this.warpManager = warpManager;
         this.plugin = plugin;
+
+        // Obtener la instancia de LuckPerms de manera segura
+        LuckPerms luckPerms = LuckPermsProvider.get();  // Usamos LuckPermsProvider.get() de forma segura
+        if (luckPerms != null) {
+            this.luckPermsAPI = luckPerms;
+        }
     }
 
     @Override
@@ -41,8 +51,13 @@ public class DelPWarpCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
+        // Eliminar el warp
         warpManager.removeWarp(player.getUniqueId(), warpName);
-        player.sendMessage("Warp " + warpName + " eliminado.");
+
+        // Enviar mensaje de éxito
+        player.sendMessage(plugin.getConfig().getString("messages.warpDeleted")
+                .replace("%warpName%", warpName));
+
         return true;
     }
 
@@ -54,6 +69,7 @@ public class DelPWarpCommand implements CommandExecutor, TabCompleter {
 
         List<String> suggestions = new ArrayList<>();
         if (args.length == 1) {
+            // Completado automático basado en los warps del jugador
             StringUtil.copyPartialMatches(args[0], warpManager.getPlayerWarps(((Player) sender).getUniqueId()).keySet(), suggestions);
         }
         return suggestions;

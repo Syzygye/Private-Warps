@@ -1,21 +1,26 @@
 package pw.spannercraft.commands;
 
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import pw.spannercraft.PrivateWarps;
-import pw.spannercraft.managers.WarpManager;
+import pw.spannercraft.WarpManager;  // Asegúrate de importar WarpManager correctamente
+import net.luckperms.api.LuckPermsProvider; // Asegúrate de importar esta clase
 
 public class SetPWarpCommand implements CommandExecutor {
 
     private WarpManager warpManager;
     private PrivateWarps plugin;
+    private LuckPerms luckPerms;
 
     public SetPWarpCommand(WarpManager warpManager, PrivateWarps plugin) {
         this.warpManager = warpManager;
         this.plugin = plugin;
+        this.luckPerms = LuckPermsProvider.get(); // Usamos LuckPermsProvider.get() directamente
     }
 
     @Override
@@ -34,8 +39,18 @@ public class SetPWarpCommand implements CommandExecutor {
         String warpName = args[0];
         Location location = player.getLocation(); // Obtener la ubicación actual del jugador
 
-        // Verificar si el jugador tiene el límite de warps
-        int limit = plugin.getConfig().getInt("settings.maxWarps", 5);  // Acceder a maxWarps dentro de 'settings'
+        // Obtener el grupo del jugador usando LuckPerms
+        String group = "default"; // Valor por defecto si no se encuentra el grupo
+        if (luckPerms != null) {
+            User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+            if (user != null) {
+                group = user.getPrimaryGroup();
+            }
+        }
+
+        // Obtener el límite de warps para el grupo
+        int limit = plugin.getConfig().getInt("warpLimits." + group, 5); // Límite por defecto 5 si no está configurado
+
         boolean warpExists = warpManager.getPlayerWarps(player.getUniqueId()).containsKey(warpName);
 
         // Si el warp no existe y el jugador ha alcanzado el límite de warps

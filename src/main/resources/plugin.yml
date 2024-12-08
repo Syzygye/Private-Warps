@@ -1,34 +1,43 @@
 name: 'PrivateWarps'
 main: 'pw.spannercraft.PrivateWarps'
-version: '1.2.0'
+version: '1.3.0'
 api-version: '1.20'
+description: "Un plugin para crear y gestionar warps privados por jugador."
+author: "Spanneredu"
 commands:
   setpwarp:
-    description: 'Crea un warp privado'
-    usage: '/setpwarp <nombre>'
-    permission: 'privatewarps.set'  # Esto vincula el comando al permiso correspondiente
+    description: "Crea un warp privado en tu ubicación actual."
+    usage: "/setpwarp <nombre>"
+    permission: 'privatewarps.setpwarp'
+    permission-message: "No tienes permiso para usar este comando."
+
   delpwarp:
-    description: 'Elimina un warp privado'
-    usage: '/delpwarp <nombre>'
-    permission: 'privatewarps.del'  # Permiso para eliminar warps
+    description: "Elimina un warp privado."
+    usage: "/delpwarp <nombre>"
+    permission: 'privatewarps.delpwarp'
+    permission-message: "No tienes permiso para usar este comando."
+
   pwarp:
-    description: 'Muestra la lista de warps o teletransporta al warp'
-    usage: '/pwarp [nombre]'
-    permission: 'privatewarps.pwarp'  # Permiso para ver y teletransportarse
+    description: "Accede a tus warps privados."
+    usage: "/pwarp <nombre>"
+    permission: 'privatewarps.pwarp'
+    permission-message: "No tienes permiso para usar este comando."
+
   pwarpreload:
-    description: 'Recarga la configuración del plugin'
-    usage: '/pwarpreload'
-    permission: 'privatewarps.reload'  # Permiso para recargar la configuración
+    description: "Recarga la configuración del plugin."
+    usage: "/pwarpreload"
+    permission: 'privatewarps.reload'
+    permission-message: "No tienes permiso para recargar la configuración."
 permissions:
-  privatewarps.set:
-    description: 'Permite crear warps privados'
-    default: true
-  privatewarps.del:
-    description: 'Permite eliminar warps privados'
-    default: true
-  privatewarps.reload:
-    description: 'Permite recargar la configuración del plugin'
+  privatewarps.setpwarp:
+    description: "Permiso para crear un warp privado."
+    default: 'op'
+  privatewarps.delpwarp:
+    description: "Permiso para eliminar un warp privado."
     default: 'op'
   privatewarps.pwarp:
-    description: 'Permite ver la lista de warps y teletransportarse a ellos'
-    default: true  # Si deseas permitir que todos los jugadores puedan usar el comando
+    description: "Permiso para teletransportarse a warps privados."
+    default: 'op'
+  privatewarps.reload:
+    description: "Permiso para recargar la configuración del plugin."
+    default: 'op'
