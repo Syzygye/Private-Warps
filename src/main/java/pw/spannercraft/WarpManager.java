@@ -1,8 +1,8 @@
 package pw.spannercraft;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,46 +11,28 @@ import java.util.Map;
 import java.util.UUID;
 
 public class WarpManager {
+    private final Map<UUID, Map<String, Location>> playerWarps = new HashMap<>();
+    private final PrivateWarps plugin;
+    private final File warpsFile;
 
-    private Map<UUID, Map<String, Location>> playerWarps;
-    private PrivateWarps plugin;
-    private File warpsFile;
-    private boolean warpsChanged;  // Bandera para indicar si hubo cambios en los warps
-
-    // Constructor modificado para aceptar PrivateWarps y configurar el archivo pwarps.yml
     public WarpManager(PrivateWarps plugin) {
         this.plugin = plugin;
-        this.playerWarps = new HashMap<>();
         this.warpsFile = new File(plugin.getDataFolder(), "pwarps.yml");
-        this.warpsChanged = false;  // Inicialmente no hay cambios
 
-        // Cargar los warps al iniciar el plugin
+        // Cargar los warps al inicio
         loadWarps();
-
-        // Programar la tarea para guardar los warps cada 5 minutos, solo si hubo cambios
-        Bukkit.getScheduler().runTaskTimer(plugin, this::saveWarpsIfNeeded, 0L, 1000L * 60 * 5);
-    }
-
-    // Método que guarda los warps solo si hubo cambios
-    public void saveWarpsIfNeeded() {
-        if (warpsChanged) {
-            saveWarps();
-            warpsChanged = false;  // Restablecemos la bandera después de guardar
-        }
     }
 
     public void addWarp(UUID playerId, String warpName, Location location) {
-        playerWarps
-                .computeIfAbsent(playerId, k -> new HashMap<>())
-                .put(warpName, location);
-        warpsChanged = true;  // Marcar como cambiado
+        playerWarps.computeIfAbsent(playerId, k -> new HashMap<>()).put(warpName, location);
+        saveWarps(); // Guardado inmediato tras añadir un warp
     }
 
     public void removeWarp(UUID playerId, String warpName) {
         Map<String, Location> warps = playerWarps.get(playerId);
         if (warps != null) {
             warps.remove(warpName);
-            warpsChanged = true;  // Marcar como cambiado
+            saveWarps(); // Guardado inmediato tras eliminar un warp
         }
     }
 
@@ -59,34 +41,38 @@ public class WarpManager {
     }
 
     public void loadWarps() {
-        if (!warpsFile.exists()) return;
+        if (!warpsFile.exists()) {
+            return;
+        }
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(warpsFile);
 
-        for (String playerIdString : config.getConfigurationSection("warps").getKeys(false)) {
-            UUID playerId = UUID.fromString(playerIdString);
-            Map<String, Location> warps = new HashMap<>();
+        if (config.contains("warps")) {
+            for (String playerIdString : config.getConfigurationSection("warps").getKeys(false)) {
+                UUID playerId = UUID.fromString(playerIdString);
+                Map<String, Location> warps = new HashMap<>();
 
-            for (String warpName : config.getConfigurationSection("warps." + playerId).getKeys(false)) {
-                String worldName = config.getString("warps." + playerId + "." + warpName + ".world");
-                double x = config.getDouble("warps." + playerId + "." + warpName + ".x");
-                double y = config.getDouble("warps." + playerId + "." + warpName + ".y");
-                double z = config.getDouble("warps." + playerId + "." + warpName + ".z");
-                float yaw = (float) config.getDouble("warps." + playerId + "." + warpName + ".yaw");
-                float pitch = (float) config.getDouble("warps." + playerId + "." + warpName + ".pitch");
+                for (String warpName : config.getConfigurationSection("warps." + playerIdString).getKeys(false)) {
+                    String path = "warps." + playerIdString + "." + warpName;
+                    String worldName = config.getString(path + ".world");
+                    double x = config.getDouble(path + ".x");
+                    double y = config.getDouble(path + ".y");
+                    double z = config.getDouble(path + ".z");
+                    float yaw = (float) config.getDouble(path + ".yaw");
+                    float pitch = (float) config.getDouble(path + ".pitch");
 
-                Location location = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
-                warps.put(warpName, location);
+                    Location location = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
+                    warps.put(warpName, location);
+                }
+
+                playerWarps.put(playerId, warps);
             }
-
-            playerWarps.put(playerId, warps);
         }
     }
 
     public void saveWarps() {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(warpsFile);
+        YamlConfiguration config = new YamlConfiguration();
 
-        // Iterar sobre todos los warps en memoria y agregarlos a la configuración
         for (Map.Entry<UUID, Map<String, Location>> entry : playerWarps.entrySet()) {
             UUID playerId = entry.getKey();
             Map<String, Location> warps = entry.getValue();
@@ -95,20 +81,20 @@ public class WarpManager {
                 String warpName = warpEntry.getKey();
                 Location location = warpEntry.getValue();
 
-                config.set("warps." + playerId + "." + warpName + ".world", location.getWorld().getName());
-                config.set("warps." + playerId + "." + warpName + ".x", location.getX());
-                config.set("warps." + playerId + "." + warpName + ".y", location.getY());
-                config.set("warps." + playerId + "." + warpName + ".z", location.getZ());
-                config.set("warps." + playerId + "." + warpName + ".yaw", location.getYaw());
-                config.set("warps." + playerId + "." + warpName + ".pitch", location.getPitch());
+                String path = "warps." + playerId + "." + warpName;
+                config.set(path + ".world", location.getWorld().getName());
+                config.set(path + ".x", location.getX());
+                config.set(path + ".y", location.getY());
+                config.set(path + ".z", location.getZ());
+                config.set(path + ".yaw", location.getYaw());
+                config.set(path + ".pitch", location.getPitch());
             }
         }
 
-        // Intentar guardar el archivo pwarps.yml
         try {
             config.save(warpsFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("No se pudo guardar el archivo pwarps.yml: " + e.getMessage());
         }
     }
 }
